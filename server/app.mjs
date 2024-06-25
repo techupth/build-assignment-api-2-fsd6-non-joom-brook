@@ -15,6 +15,7 @@ app.get("/assignments",async(req,res)=>{
   try {
       results = await connectionPool.query(`
       select * from assignments`)
+      console.log(results)
   } catch {
     return res.status(500).json({ "message": "Server could not read assignment because database connection" })
   }
@@ -75,8 +76,9 @@ app.put("/assignments/:assignmentId",async(req,res)=>{
     ...req.body,
     updated_at:new Date()
   }
+  let results;
   try {
-    await connectionPool.query(`
+    results = await connectionPool.query(`
       update assignments
       set title = $2,
           content = $3,
@@ -89,6 +91,9 @@ app.put("/assignments/:assignmentId",async(req,res)=>{
       ])
   }catch {
     return res.status(500).json({ "message": "Server could not update assignment because database connection" })
+  }
+  if (results.rowCount === 0) {
+    return res.status(404).json({ "message": "Server could not find a requested assignment to update" })
   }
   return res.status(200).json({ "message": "Updated assignment sucessfully" })
 })
