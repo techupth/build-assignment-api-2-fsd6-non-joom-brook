@@ -43,6 +43,32 @@ app.get("/assignments/:assignmentId",async(req,res)=>{
   })
 })
 
+app.post("/assignments", async(req, res)=>{
+  const newAssignment = {
+    ...req.body
+  }
+  try {
+    await connectionPool.query(
+      `insert into assignments (title,content,category)
+      values ($1,$2,$3)`,[
+        newAssignment.title,
+        newAssignment.content,
+        newAssignment.category
+      ]
+    )
+  } catch {
+    if (!newAssignment.title || !newAssignment.content || !newAssignment.category) {
+      return res.status(400).json({ "message": "Server could not create assignment because there are missing data from client" })
+    }
+    else {
+      return res.status(500).json({ "message": "Server could not create assignment because database connection" })
+    }
+  }
+  return res.status(201).json(
+    { "message": "Created assignment sucessfully" }
+  )
+})
+
 app.put("/assignments/:assignmentId",async(req,res)=>{
   const assignmentIdFromClient = req.params.assignmentId
   const updatedAssignment = {
